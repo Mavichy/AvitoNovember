@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: pr_user
+      POSTGRES_PASSWORD: pr_password
+      POSTGRES_DB: pr_db
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pr_user -d pr_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      HTTP_PORT: "8080"
+      DB_DSN: "postgres://pr_user:pr_password@db:5432/pr_db?sslmode=disable"
+    ports:
+      - "8080:8080"
